@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -11,10 +11,11 @@ import {
   Moon,
   ChevronRight,
   Atom,
+  BookOpen
 } from "lucide-react"
 import { unit } from "@/lib/data" // Your mock data import
 import Image from "next/image"
-
+import { chapterIconMap } from "@/lib/chapter"
 const subjects = [
   { id: "physics", name: "Physics PYQs", color: "bg-orange-500", icon: "/phy.png" },
   { id: "chemistry", name: "Chemistry PYQs", color: "bg-green-500", icon: "/chem.png" },
@@ -25,6 +26,9 @@ const filterOptions = {
   class: ["Class 11", "Class 12", "All Classes"],
   units: ["Mechanics", "Thermodynamics", "Optics", "Modern Physics", "All Units"],
 }
+
+
+
 
 const subjectUnits = {
   physics: [
@@ -53,6 +57,7 @@ const subjectUnits = {
 }
 
 
+
 export default function JEEMainInterface() {
   const [activeSubject, setActiveSubject] = useState("physics")
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -64,11 +69,37 @@ export default function JEEMainInterface() {
   const [showNotStarted, setShowNotStarted] = useState(false)
   const [showWeakChapters, setShowWeakChapters] = useState(false)
   const [selectedUnits, setSelectedUnits] = useState("All Units")
+  const classDropdownRef = useRef(null)
+  const unitsDropdownRef = useRef(null)
+
 
   // Reset units when subject changes
   useEffect(() => {
     setSelectedUnits("All Units")
   }, [activeSubject])
+
+  useEffect(() => {
+  function handleClickOutside(event) {
+    if (
+      classDropdownRef.current &&
+      !classDropdownRef.current.contains(event.target)
+    ) {
+      setShowClassDropdown(false)
+    }
+    if (
+      unitsDropdownRef.current &&
+      !unitsDropdownRef.current.contains(event.target)
+    ) {
+      setShowUnitsDropdown(false)
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside)
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside)
+  }
+}, [])
+
 
 
 
@@ -129,7 +160,7 @@ export default function JEEMainInterface() {
     <div className={`min-h-screen transition-colors duration-200 ${isDarkMode ? "dark bg-slate-900" : "bg-gray-50"}`}>
       <div className="hidden lg:flex">
         {/* Sidebar */}
-        <div className={`w-64 border-r min-h-screen transition-colors duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
+        <div className={`w-64 border-r min-h-screen fixed left-0 top-0 transition-colors duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
           <div className="p-4">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
@@ -163,7 +194,7 @@ export default function JEEMainInterface() {
                     }`}
                 >
                   <div className={`w-6 h-6 rounded-full  flex items-center justify-center text-white text-xs font-bold`}>
-                    <Image src={subject.icon} alt="icon" width={20} height={20}/>
+                    <Image src={subject.icon} alt="icon" width={20} height={20} />
                   </div>
                   <span className="text-sm">{subject.name}</span>
                   <ChevronRight className="w-4 h-4 ml-auto" />
@@ -173,21 +204,21 @@ export default function JEEMainInterface() {
           </div>
         </div>
         {/* Main Content */}
-        <div className="flex-1">
+        <div className="flex-1 ml-64">
           <div className={`border-b p-6 transition-colors duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
             <div className="flex items-center justify-center mb-4">
               <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full ${subjects.find(s => s.id === activeSubject)?.color} flex items-center justify-center`}>
+                <div className={`w-9 h-9 rounded-lg ${subjects.find(s => s.id === activeSubject)?.color} flex items-center justify-center`}>
                   <span className="text-white text-xs font-bold">
                     {/* {activeSubject[0].toUpperCase()} */}
-                    <Atom/>
+                    <Atom className="text-xs" />
                   </span>
                 </div>
                 <div className="flex mx-auto mr-4">
                   {/* <Image src={subjects.find(s => s.id === activeSubject)?.icon ?? "/default.png"} alt="logo" height={30} width={30}/> */}
                   <h1 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                  {subjects.find(s => s.id === activeSubject)?.name}
-                </h1>
+                    {subjects.find(s => s.id === activeSubject)?.name}
+                  </h1>
                 </div>
               </div>
               {/* <Badge variant="destructive" className="bg-red-500 text-white">
@@ -199,7 +230,7 @@ export default function JEEMainInterface() {
             </p>
             <div className="flex items-center gap-4 mb-4">
               {/* Class filter */}
-              <div className="relative">
+              <div className="relative"  ref={classDropdownRef}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -226,52 +257,52 @@ export default function JEEMainInterface() {
                 )}
               </div>
               {/* Unit filter */}
-              <div className="relative">
-  <Button
-    variant="outline"
-    size="sm"
-    className={`gap-1 ${isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700" : ""}`}
-    onClick={() => setShowUnitsDropdown(!showUnitsDropdown)}
-  >
-    Units <ChevronDown className="w-3 h-3" />
-  </Button>
-  {showUnitsDropdown && (
-    <div className={`absolute top-full left-0 mt-1 w-40 rounded-md shadow-lg z-10 ${isDarkMode ? "bg-slate-700 border-slate-600" : "bg-white border-gray-200"} border`}>
-      <button
-        className={`w-full px-3 py-2 text-left text-sm hover:bg-opacity-50 ${isDarkMode ? "text-gray-300 hover:bg-slate-600" : "text-gray-700 hover:bg-gray-100"}`}
-        onClick={() => {
-          setSelectedUnits("All Units")
-          setShowUnitsDropdown(false)
-        }}
-      >
-        All Units
-      </button>
-      {subjectUnits[activeSubject].map((unit) => (
-        <button
-          key={unit}
-          className={`w-full px-3 py-2 text-left text-sm hover:bg-opacity-50 ${isDarkMode ? "text-gray-300 hover:bg-slate-600" : "text-gray-700 hover:bg-gray-100"}`}
-          onClick={() => {
-            setSelectedUnits(unit)
-            setShowUnitsDropdown(false)
-          }}
-        >
-          {unit}
-        </button>
-      ))}
-    </div>
-  )}
-</div>
+              <div className="relative" ref={unitsDropdownRef}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`gap-1 ${isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700" : ""}`}
+                  onClick={() => setShowUnitsDropdown(!showUnitsDropdown)}
+                >
+                  Units <ChevronDown className="w-3 h-3" />
+                </Button>
+                {showUnitsDropdown && (
+                  <div className={`absolute top-full left-0 mt-1 w-40 rounded-md shadow-lg z-10 ${isDarkMode ? "bg-slate-700 border-slate-600" : "bg-white border-gray-200"} border`}>
+                    <button
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-opacity-50 ${isDarkMode ? "text-gray-300 hover:bg-slate-600" : "text-gray-700 hover:bg-gray-100"}`}
+                      onClick={() => {
+                        setSelectedUnits("All Units")
+                        setShowUnitsDropdown(false)
+                      }}
+                    >
+                      All Units
+                    </button>
+                    {subjectUnits[activeSubject].map((unit) => (
+                      <button
+                        key={unit}
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-opacity-50 ${isDarkMode ? "text-gray-300 hover:bg-slate-600" : "text-gray-700 hover:bg-gray-100"}`}
+                        onClick={() => {
+                          setSelectedUnits(unit)
+                          setShowUnitsDropdown(false)
+                        }}
+                      >
+                        {unit}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <Button
                 variant={'outline'}
-                className={`${isDarkMode ? "bg-slate-700 text-gray-300 text-sm" : "bg-white text-gray-700"} cursor-pointer`}
+                className={`text-xs px-2 py-1  ${isDarkMode ? "bg-slate-700 text-gray-300 text-sm" : "bg-white text-gray-700"} cursor-pointer`}
                 onClick={() => setShowNotStarted(v => !v)}
               >
                 Not Started
               </Button>
               <Button
                 variant={"outline"}
-                className={`${isDarkMode ? "bg-slate-700 text-gray-300" : "bg-white text-gray-700"} cursor-pointer ${showWeakChapters ? "text-gray-300": ""}`}
+                className={` text-xs px-2 py-1  ${isDarkMode ? "bg-slate-700 text-gray-300" : "bg-white text-gray-700"} cursor-pointer ${showWeakChapters ? "text-gray-300" : ""}`}
                 onClick={() => setShowWeakChapters(v => !v)}
               >
                 Weak Chapters
@@ -305,6 +336,7 @@ export default function JEEMainInterface() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
+                      {chapterIconMap[chapter.name] || <BookOpen className="w-6 h-6 text-gray-400" />}
                       <span className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                         {chapter.name}
                       </span>
@@ -334,9 +366,8 @@ export default function JEEMainInterface() {
       <div className="lg:hidden">
         {/* Header */}
         <div
-          className={`border-b px-4 py-3 transition-colors duration-200 ${
-            isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border-b px-4 py-3 transition-colors duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -356,18 +387,16 @@ export default function JEEMainInterface() {
 
         {/* Subject Tabs */}
         <div
-          className={`border-b px-4 py-3 transition-colors duration-200 ${
-            isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border-b px-4 py-3 transition-colors duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="flex gap-6">
             {subjects.map((subject) => (
               <button
                 key={subject.id}
                 onClick={() => setActiveSubject(subject.id)}
-                className={`flex flex-col items-center gap-1 ${
-                  activeSubject === subject.id ? "text-orange-500" : isDarkMode ? "text-gray-400" : "text-gray-600"
-                }`}
+                className={`flex flex-col items-center gap-1 ${activeSubject === subject.id ? "text-orange-500" : isDarkMode ? "text-gray-400" : "text-gray-600"
+                  }`}
               >
                 <div className={`w-8 h-8 rounded-full ${subject.color} flex items-center justify-center`}>
                   <span className="text-white text-xs font-bold">
@@ -384,9 +413,8 @@ export default function JEEMainInterface() {
 
         {/* Filters */}
         <div
-          className={`border-b px-4 py-3 transition-colors duration-200 ${
-            isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
-          }`}
+          className={`border-b px-4 py-3 transition-colors duration-200 ${isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
+            }`}
         >
           <div className="flex items-center gap-3 mb-3">
             <Button
@@ -441,18 +469,16 @@ export default function JEEMainInterface() {
             {getSortedChapters(filteredChapters).map((chapter) => (
               <div
                 key={chapter.id}
-                className={`rounded-lg border p-3 transition-colors cursor-pointer ${
-                  isDarkMode ? "bg-slate-800 border-slate-700 hover:bg-slate-750" : "bg-white border-gray-200"
-                }`}
+                className={`rounded-lg border p-3 transition-colors cursor-pointer ${isDarkMode ? "bg-slate-800 border-slate-700 hover:bg-slate-750" : "bg-white border-gray-200"
+                  }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
                     {chapter.icon}
                     <div className="flex-1">
                       <h3
-                        className={`font-medium text-sm leading-tight mb-1 ${
-                          isDarkMode ? "text-white" : "text-gray-900"
-                        }`}
+                        className={`font-medium text-sm leading-tight mb-1 ${isDarkMode ? "text-white" : "text-gray-900"
+                          }`}
                       >
                         {chapter.name}
                       </h3>
