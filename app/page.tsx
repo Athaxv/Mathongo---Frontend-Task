@@ -263,7 +263,7 @@ export default function JEEMainInterface() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`gap-1 ${isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700" : ""}`}
+                  className={`gap-1 ${isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700" : "text-black hover:text-gray-400"}`}
                   onClick={() => setShowClassDropdown(!showClassDropdown)}
                 >
                   Class <ChevronDown className="w-3 h-3" />
@@ -290,13 +290,13 @@ export default function JEEMainInterface() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className={`gap-1 ${isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700" : ""}`}
+                  className={`gap-1 ${isDarkMode ? "border-slate-600 text-gray-300 hover:bg-slate-700" : "text-black hover:text-gray-400"}`}
                   onClick={() => setShowUnitsDropdown(!showUnitsDropdown)}
                 >
                   Units <ChevronDown className="w-3 h-3" />
                 </Button>
                 {showUnitsDropdown && (
-                  <div className={`absolute top-full left-0 mt-1 w-40 rounded-md shadow-lg z-10 ${isDarkMode ? "bg-slate-700 border-slate-600" : "bg-white border-gray-200"} border`}>
+                  <div className={`absolute top-full left-0 mt-1 w-40 rounded-md shadow-lg z-10 ${isDarkMode ? "bg-slate-700 border-slate-600" : "bg-white text-black border-gray-200"} border`}>
                     <button
                       className={`w-full px-3 py-2 text-left text-sm hover:bg-opacity-50 ${isDarkMode ? "text-gray-300 hover:bg-slate-600" : "text-gray-700 hover:bg-gray-100"}`}
                       onClick={() => {
@@ -324,14 +324,14 @@ export default function JEEMainInterface() {
 
               <Button
                 variant={'outline'}
-                className={`text-xs px-2 py-1  ${isDarkMode ? "bg-slate-700 text-gray-300 text-sm" : "bg-white text-gray-700"} cursor-pointer`}
+                className={`text-xs px-2 py-1  ${isDarkMode ? "bg-slate-700 text-gray-300 text-xs" : "bg-white text-gray-700 hover:text-gray-500"} cursor-pointer`}
                 onClick={() => setShowNotStarted(v => !v)}
               >
                 Not Started
               </Button>
               <Button
                 variant={"outline"}
-                className={` text-xs px-2 py-1  ${isDarkMode ? "bg-slate-700 text-gray-300" : "bg-white text-gray-700"} cursor-pointer ${showWeakChapters ? "text-gray-300" : ""}`}
+                className={` text-xs px-2 py-1  ${isDarkMode ? "bg-slate-700 text-gray-300 text-xs" : "bg-white text-gray-700 hover:text-gray-500"} cursor-pointer ${showWeakChapters ? "text-gray-300" : ""}`}
                 onClick={() => setShowWeakChapters(v => !v)}
               >
                 Weak Chapters
