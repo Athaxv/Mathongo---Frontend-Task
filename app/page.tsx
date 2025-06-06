@@ -69,8 +69,8 @@ export default function JEEMainInterface() {
   const [showNotStarted, setShowNotStarted] = useState(false)
   const [showWeakChapters, setShowWeakChapters] = useState(false)
   const [selectedUnits, setSelectedUnits] = useState("All Units")
-  const classDropdownRef = useRef(null)
-  const unitsDropdownRef = useRef(null)
+  const classDropdownRef = useRef<HTMLDivElement>(null)
+  const unitsDropdownRef = useRef<HTMLDivElement>(null)
 
 
   // Reset units when subject changes
@@ -79,16 +79,16 @@ export default function JEEMainInterface() {
   }, [activeSubject])
 
   useEffect(() => {
-  function handleClickOutside(event) {
+  function handleClickOutside(event: MouseEvent) {
     if (
       classDropdownRef.current &&
-      !classDropdownRef.current.contains(event.target)
+      !(classDropdownRef.current && classDropdownRef.current.contains(event.target as Node))
     ) {
       setShowClassDropdown(false)
     }
     if (
       unitsDropdownRef.current &&
-      !unitsDropdownRef.current.contains(event.target)
+      !(unitsDropdownRef.current && unitsDropdownRef.current.contains(event.target as Node))
     ) {
       setShowUnitsDropdown(false)
     }
@@ -121,28 +121,57 @@ export default function JEEMainInterface() {
         (!showNotStarted || item.status === "Not Started") &&
         (!showWeakChapters || item.isWeakChapter === true)
       )
-      .map(item => ({
-        id: item.chapter.toLowerCase().replace(/\s+/g, "-"),
-        name: item.chapter,
-        stats: {
-          "2024": item.yearWiseQuestionCount["2024"],
-          "2025": item.yearWiseQuestionCount["2025"],
-        },
-        trend:
+      .map(item => {
+        const trend: "up" | "down" | "same" =
           item.yearWiseQuestionCount["2025"] > item.yearWiseQuestionCount["2024"]
             ? "up"
             : item.yearWiseQuestionCount["2025"] < item.yearWiseQuestionCount["2024"]
               ? "down"
-              : "same",
-        totalQs: `${item.questionSolved} / ${Object.values(item.yearWiseQuestionCount).reduce((a, b) => a + b, 0)}`,
-        status: item.status,
-        isWeak: item.isWeakChapter,
-      }))
+              : "same";
+        return {
+          id: item.chapter.toLowerCase().replace(/\s+/g, "-"),
+          name: item.chapter,
+          stats: {
+            "2024": item.yearWiseQuestionCount["2024"],
+            "2025": item.yearWiseQuestionCount["2025"],
+          },
+          trend,
+          totalQs: `${item.questionSolved} / ${Object.values(item.yearWiseQuestionCount).reduce((a, b) => a + b, 0)}`,
+          status: item.status,
+          isWeak: item.isWeakChapter,
+        };
+      })
     : []
+
+//     interface ChapterUnit {
+//   subject: string;
+//   class: string;
+//   unit: string;
+//   chapter: string;
+//   status: "Not Started" | "In Progress" | "Completed"; // adjust as per your actual values
+//   isWeakChapter: boolean;
+//   questionSolved: number;
+//   yearWiseQuestionCount: {
+//     [year: string]: number; // e.g., "2024": 10, "2025": 15
+//   };
+// }
+
 
 
   // Sorting logic
-  const getSortedChapters = (chapters) => {
+  type ChapterSummary = {
+    id: string;
+    name: string;
+    stats: {
+      [year: string]: number;
+    };
+    trend: "up" | "down" | "same";
+    totalQs: string;
+    status: string;
+    isWeak: boolean;
+  };
+
+  const getSortedChapters = (chapters: ChapterSummary[]) => {
     const sorted = [...chapters]
     switch (sortOrder) {
       case "alphabetical":
@@ -277,7 +306,7 @@ export default function JEEMainInterface() {
                     >
                       All Units
                     </button>
-                    {subjectUnits[activeSubject].map((unit) => (
+                    {subjectUnits[activeSubject as keyof typeof subjectUnits].map((unit) => (
                       <button
                         key={unit}
                         className={`w-full px-3 py-2 text-left text-sm hover:bg-opacity-50 ${isDarkMode ? "text-gray-300 hover:bg-slate-600" : "text-gray-700 hover:bg-gray-100"}`}
@@ -336,7 +365,7 @@ export default function JEEMainInterface() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {chapterIconMap[chapter.name] || <BookOpen className="w-6 h-6 text-gray-400" />}
+                      {chapterIconMap[chapter.name as keyof typeof chapterIconMap] || <BookOpen className="w-6 h-6 text-gray-400" />}
                       <span className={`font-medium ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                         {chapter.name}
                       </span>
@@ -474,7 +503,7 @@ export default function JEEMainInterface() {
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
-                    {chapter.icon}
+                    {chapterIconMap[chapter.name as keyof typeof chapterIconMap] || <BookOpen className="w-6 h-6 text-gray-400" />}
                     <div className="flex-1">
                       <h3
                         className={`font-medium text-sm leading-tight mb-1 ${isDarkMode ? "text-white" : "text-gray-900"
